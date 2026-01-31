@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-test('Pos_UI_0002 – Verify automatic Sinhala output refresh during typing', async ({ page }) => {
+test('Pos_UI_0001 – Verify automatic Sinhala output refresh during typing', async ({ page }) => {
   await page.goto('https://www.swifttranslator.com/', { waitUntil: 'load' });
 
   const inputField = page.locator('textarea, input[type="text"]').first();
