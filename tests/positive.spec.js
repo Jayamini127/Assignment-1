@@ -39,17 +39,20 @@ const positiveTests = [
 test.describe('Positive Functional Tests – Swift Translator', () => {
 
   async function getTranslationOutput(page) {
+    // Wait for visible translation output to appear
     await page.waitForFunction(() => {
-      const candidates = Array.from(document.querySelectorAll('div, span, p'));
+      const candidates = Array.from(document.querySelectorAll('div, span, p'))
+        .filter(el => el.offsetParent !== null); // only visible elements
       return candidates.some(c => c.innerText.trim().length > 0);
     }, { timeout: 120000 });
 
-    const allElements = page.locator('div, span, p');
+    // Locate visible elements only
+    const allElements = page.locator('div, span, p', { hasText: /\S/ });
     const count = await allElements.count();
     for (let i = 0; i < count; i++) {
       const el = allElements.nth(i);
       const text = (await el.innerText()).trim();
-      if (text.length > 0) return el;
+      if (text.length > 0 && await el.isVisible()) return el;
     }
 
     throw new Error('No translation output found!');
@@ -62,13 +65,15 @@ test.describe('Positive Functional Tests – Swift Translator', () => {
   });
 
   test.afterEach(async ({ page }) => {
-    await page.waitForTimeout(5000); // small pause to view results
+    await page.waitForTimeout(2000); // small pause to view results
   });
 
   // Loop through all test cases dynamically
   positiveTests.forEach(({ input, expected }) => {
     test(`Translate: "${input}"`, async ({ page }) => {
-      await page.fill('textarea, input[type="text"]', input);
+      const inputBox = page.locator('textarea, input[type="text"]').first();
+      await inputBox.fill(input);
+      
       const outputBox = await getTranslationOutput(page);
       await expect(outputBox).toContainText(expected);
     });
